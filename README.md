@@ -1,61 +1,129 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Laravel Multi-Tenant Application
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A robust multi-tenant Laravel application built using the stancl/tenancy package, providing complete database isolation for each tenant.
 
-## About Laravel
+## Overview
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+This application implements a multi-tenancy architecture where each tenant has its own isolated database. The system allows for tenant creation, user management within each tenant, and provides a complete API for both central and tenant-specific operations.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Multi-database Tenancy**: Each tenant gets its own isolated database
+- **Domain-based Tenant Identification**: Tenants are identified by their domain
+- **Central Administration**: Manage tenants from a central application
+- **Tenant-specific User Management**: Each tenant has its own user system
+- **API Authentication**: Secure API endpoints using Laravel Sanctum
+- **Tenant-specific API Routes**: Separate API routes for tenant operations
 
-## Learning Laravel
+## Architecture
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Central Application
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+The central application manages tenants and their domains. It provides API endpoints for:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- Creating new tenants
+- Listing existing tenants and their domains
 
-## Laravel Sponsors
+### Tenant Applications
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Each tenant has its own isolated environment with:
 
-### Premium Partners
+- User management system
+- Authentication system using Laravel Sanctum
+- API endpoints for tenant-specific operations
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development/)**
-- **[Active Logic](https://activelogic.com)**
+## Technical Stack
 
-## Contributing
+- **PHP 8.4+**
+- **Laravel 12.0**
+- **stancl/tenancy 3.9**: For multi-tenancy implementation
+- **Laravel Sanctum**: For API authentication
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Directory Structure
 
-## Code of Conduct
+Key components of the application:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- **app/Models/Tenant.php**: Tenant model extending the stancl/tenancy base tenant
+- **app/Models/User.php**: User model for tenant-specific users
+- **app/Http/Controllers/TenantController.php**: Manages tenant creation and listing
+- **app/Http/Controllers/AuthController.php**: Handles tenant-specific authentication
+- **app/Http/Controllers/UserController.php**: Manages tenant-specific user operations
+- **app/Providers/TenancyServiceProvider.php**: Configures tenancy events and routing
+- **config/tenancy.php**: Configuration for the tenancy system
+- **routes/api.php**: Central API routes
+- **routes/tenant_api.php**: Tenant-specific API routes
+- **routes/tenant.php**: Tenant-specific web routes
 
-## Security Vulnerabilities
+## API Endpoints
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Central API
+
+- `GET /tenants`: List all tenants with their domains
+- `POST /tenants`: Create a new tenant with a domain
+
+### Tenant API
+
+- `POST /api/register`: Register a new user in the tenant
+- `POST /api/login`: Login a user and get an authentication token
+- `GET /api/me`: Get the authenticated user's information
+- `POST /api/logout`: Logout the authenticated user
+- `GET /api/users`: List all users (with pagination and search)
+- `POST /api/users`: Create a new user
+- `GET /api/users/{id}`: Get a specific user
+- `PUT /api/users/{id}`: Update a user
+- `DELETE /api/users/{id}`: Delete a user
+
+## Database Structure
+
+### Central Database
+
+- **tenants**: Stores tenant information
+- **domains**: Maps domains to tenants
+
+### Tenant Databases
+
+Each tenant has its own database with the following tables:
+
+- **users**: Tenant-specific users
+- **personal_access_tokens**: For API authentication
+- **password_reset_tokens**: For password reset functionality
+- **sessions**: For session management
+- **cache**: For caching
+- **jobs**: For queue processing
+
+## Getting Started
+
+1. Clone the repository
+2. Install dependencies with `composer install`
+3. Copy `.env.example` to `.env` and configure your database settings
+4. Run migrations for the central database: `php artisan migrate`
+5. Create a tenant: `POST /tenants` with `id` and `domain` parameters
+6. Access the tenant application through the configured domain
+
+## Development
+
+### Creating a New Tenant
+
+```bash
+curl -X POST http://localhost/tenants \
+  -H "Content-Type: application/json" \
+  -d '{"id":"one","domain":"one.localhost"}'
+```
+
+### Accessing Tenant API
+
+```bash
+# Register a user
+curl -X POST http://one.localhost/api/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"John Doe","email":"john@example.com","password":"password","password_confirmation":"password"}'
+
+# Login
+curl -X POST http://one.localhost/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"john@example.com","password":"password"}'
+```
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is open-sourced software licensed under the MIT license.
